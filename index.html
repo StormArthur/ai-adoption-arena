@@ -295,7 +295,7 @@
     </div>
     <div class="radar-row" style="margin-top:14px">
       <div>
-        <svg id="radar" viewBox="0 0 440 420" width="100%" style="max-width:440px;display:block;margin:auto"></svg>
+        <svg id="radar" viewBox="-60 0 560 420" width="100%" style="max-width:500px;display:block;margin:auto"></svg>
         <div class="legend" id="legend">
           <span><i style="background:var(--you)"></i>Your team</span>
           <span><i style="background:var(--bench)"></i>Best-in-class SaaS</span>
@@ -409,16 +409,16 @@ const DIMS = [
       {q:"What source material does AI use when it drafts?", opts:[
         ["None — we don't feed any source material into AI.",10],
         ["Now and then someone pastes in a single transcript or support ticket by hand.",32],
-        ["We regularly prompt AI using product specs, support tickets or call transcripts.",55],
-        ["Most of those sources get used, but it's still manual copy-paste.",80],
+        ["Writers routinely paste in one or two sources (a spec, ticket or transcript) when drafting.",55],
+        ["We pull from many sources, but a person still gathers and feeds them in by hand each time.",80],
         ["Sources (tickets, transcripts, engineering notes, code) flow into AI drafts automatically.",100],
       ]},
       {q:"Where does the AI drafting actually happen?", opts:[
         ["Nowhere — we don't use AI for drafting.",10],
         ["In a separate AI chatbot, then copy-pasted back into our docs.",32],
         ["Through an add-on inside our writing tool, used by a few writers.",55],
-        ["AI drafting is built into our writing tool for everyone.",80],
-        ["AI drafting is built right into the system where we write and publish.",100],
+        ["AI drafting lives inside the editor our writers use, available to everyone.",80],
+        ["AI is wired into the whole publishing pipeline — it can create and place draft pages on its own, not just assist in the editor.",100],
       ]},
     ]
   },
@@ -450,8 +450,8 @@ const DIMS = [
       ]},
       {q:"Can a doc be published if it fails the checks?", opts:[
         ["There are no checks.",10],
-        ["Checks exist but are just suggestions — easy to ignore.",32],
-        ["Checks show up during review, but don't block publishing.",55],
+        ["Checks run automatically but are advisory — writers can ignore them and still publish.",32],
+        ["An editor catches issues in review, but nothing blocks publishing automatically.",55],
         ["Failing the checks usually blocks publishing, with some exceptions.",80],
         ["A doc simply can't be published until all checks pass.",100],
       ]},
@@ -471,7 +471,7 @@ const DIMS = [
     questions:[
       {q:"When someone searches your docs, what do they get?", opts:[
         ["A keyword search — they still have to read through pages to find the answer.",10],
-        ["A solid keyword search, but no AI-written answers.",32],
+        ["A good keyword search with filters and clear structure, but no AI-written answers.",32],
         ["A keyword search, plus an “ask a question, get an answer” feature on part of the docs.",55],
         ["AI-written answers (with links to sources) across most of the docs.",80],
         ["AI-written, source-linked answers everywhere — and we track what people couldn't find.",100],
@@ -540,9 +540,9 @@ const DIMS = [
       ]},
       {q:"When the assistant gives a bad answer, what happens?", opts:[
         ["We don't look at the assistant's answers.",15],
-        ["We glance at them once in a while.",38],
-        ["We review the failures every so often.",62],
-        ["We regularly review bad answers and note the doc gaps.",82],
+        ["We only notice bad answers when a user complains.",38],
+        ["Someone skims the assistant's logs now and then, but it rarely leads to a doc change.",62],
+        ["We review flagged or low-rated answers on a set cadence and log the doc gaps.",82],
         ["Bad or unsure answers routinely trigger fixes to the docs.",100],
       ]},
     ]
@@ -604,8 +604,8 @@ const DIMS = [
         ["Gut feel, or whoever asks loudest.",20],
         ["A mix of intuition and a bit of data.",45],
         ["Mostly based on data.",70],
-        ["Based on data, and we check afterwards whether the docs actually helped.",88],
-        ["Ranked by real impact — e.g. fewer support tickets and more successful searches.",100],
+        ["Data-driven, and we measure whether each new doc actually moved the needle.",88],
+        ["A ranked backlog, scored by expected impact (fewer support tickets, more successful searches) and reviewed every cycle.",100],
       ]},
     ]
   },
@@ -626,7 +626,7 @@ const DIMS = [
         ["People swap tips informally.",35],
         ["We share some prompts and run occasional training.",62],
         ["We keep a shared prompt library and train people regularly.",85],
-        ["Shared prompt library, regular training, and AI skill-building is part of how we grow writers.",100],
+        ["All of that, plus AI skill is built into how we hire, onboard and grow writers.",100],
       ]},
       {q:"What ground rules or guardrails govern AI use?", opts:[
         ["None.",10],
@@ -1032,14 +1032,19 @@ function copyLink(){
 }
 function downloadRadar(){
   const svg=document.getElementById('radar'); if(!svg) return;
-  const clone=svg.cloneNode(true); clone.setAttribute('xmlns','http://www.w3.org/2000/svg');
   const NS='http://www.w3.org/2000/svg';
-  const bg=document.createElementNS(NS,'rect'); bg.setAttribute('width',440);bg.setAttribute('height',420);bg.setAttribute('fill','#ffffff');
+  const [vx,vy,vw,vh]=(svg.getAttribute('viewBox')||'0 0 440 420').split(/\s+/).map(Number);
+  const clone=svg.cloneNode(true);
+  clone.setAttribute('xmlns',NS);
+  clone.setAttribute('width',vw); clone.setAttribute('height',vh);   // explicit size so the image isn't cropped
+  clone.removeAttribute('style');
+  const bg=document.createElementNS(NS,'rect');
+  bg.setAttribute('x',vx);bg.setAttribute('y',vy);bg.setAttribute('width',vw);bg.setAttribute('height',vh);bg.setAttribute('fill','#ffffff');
   clone.insertBefore(bg,clone.firstChild);
   const data=new XMLSerializer().serializeToString(clone);
   const img=new Image();
-  img.onload=()=>{ const sc=2,c=document.createElement('canvas'); c.width=440*sc;c.height=420*sc;
-    const ctx=c.getContext('2d'); ctx.scale(sc,sc); ctx.drawImage(img,0,0);
+  img.onload=()=>{ const sc=2,c=document.createElement('canvas'); c.width=vw*sc;c.height=vh*sc;
+    const ctx=c.getContext('2d'); ctx.setTransform(sc,0,0,sc,0,0); ctx.drawImage(img,0,0,vw,vh);
     c.toBlob(b=>{ const a=document.createElement('a'); a.href=URL.createObjectURL(b);
       a.download='impact-ai-adoption-radar.png'; document.body.appendChild(a); a.click(); a.remove();
       setTimeout(()=>URL.revokeObjectURL(a.href),2000); }); };
