@@ -93,9 +93,12 @@
   .mode h3{font-size:18px;margin:8px 0 4px;color:var(--ink)}
   .mode p{color:var(--muted);font-size:13.5px}
 
-  input.field,textarea.field{width:100%;background:#fff;border:1.5px solid var(--line);border-radius:12px;
+  input.field,textarea.field,select.field{width:100%;background:#fff;border:1.5px solid var(--line);border-radius:12px;
     color:var(--txt);font:inherit;font-size:15px;padding:12px 14px;margin-top:8px}
-  input.field:focus,textarea.field:focus{outline:none;border-color:var(--accent)}
+  select.field{cursor:pointer;appearance:none;-webkit-appearance:none;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' stroke='%235d6b8a' stroke-width='2' fill='none' stroke-linecap='round'/></svg>");
+    background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
+  input.field:focus,textarea.field:focus,select.field:focus{outline:none;border-color:var(--accent)}
   textarea.field{min-height:130px;resize:vertical;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px}
   label.lbl{font-size:13px;color:var(--muted);font-weight:600}
 
@@ -250,6 +253,19 @@
     <div class="nav">
       <button class="btn ghost" onclick="goHome()">← Back</button>
       <button class="btn primary" onclick="buildTeam()">Build team view →</button>
+    </div>
+  </section>
+
+  <!-- NAME SELECT -->
+  <section id="nameSelect" class="card hide">
+    <h2 style="font-size:22px;margin-bottom:6px;color:var(--ink)">👋 Who's taking the assessment?</h2>
+    <p style="color:var(--muted);font-size:15px">Pick your name so we can label your result — it's how the team view tells everyone apart.</p>
+    <label class="lbl" style="margin-top:16px;display:block">Your name</label>
+    <select id="namePick" class="field" onchange="onNamePick()"></select>
+    <input id="nameOther" class="field hide" placeholder="Type your name" autocomplete="off">
+    <div class="nav">
+      <button class="btn ghost" onclick="goHome()">← Back</button>
+      <button class="btn primary" onclick="beginSolo()">Start assessment →</button>
     </div>
   </section>
 
@@ -669,12 +685,37 @@ const LS={
 /* ============ FLOW ============ */
 function show(id){document.getElementById(id).classList.remove('hide');}
 function hide(id){document.getElementById(id).classList.add('hide');}
-function hideAll(){['home','quiz','teamInput','results','breakdown','history'].forEach(hide);}
+function hideAll(){['home','nameSelect','quiz','teamInput','results','breakdown','history'].forEach(hide);}
 function scrollTop(){window.scrollTo({top:0,behavior:'smooth'});}
 function goHome(){ quizActive=false; hideAll(); show('home'); loadHomeExtra(); scrollTop(); }
 
+/* team roster for the name picker — edit this list to add/remove people */
+const NAMES=["Altus Booysen","Dijah Akhalwaya","Donnique Burger","Donovan Cowie",
+  "Michaela Van Der Linde","Safiyya Sulaiman","Shaymaa Abdel Salam","Storm Arthur","Ziyad Allie"];
+function buildNameSelect(){
+  const sel=document.getElementById('namePick'); if(!sel) return;
+  sel.innerHTML='<option value="__none__">— Select your name —</option>'
+    +NAMES.map(n=>`<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join('')
+    +'<option value="__other__">Other (type a name)…</option>';
+}
+function onNamePick(){
+  const v=document.getElementById('namePick').value;
+  const other=document.getElementById('nameOther');
+  other.classList.toggle('hide', v!=='__other__');
+  if(v==='__other__') other.focus();
+}
 function startSolo(){
-  raterName = (prompt("Optional: a name/label for this assessment (e.g. your name or “Team avg”). Leave blank to skip.","")||"").trim();
+  buildNameSelect();
+  document.getElementById('namePick').value='__none__';
+  document.getElementById('nameOther').value='';
+  document.getElementById('nameOther').classList.add('hide');
+  hideAll(); show('nameSelect');
+}
+function beginSolo(){
+  const v=document.getElementById('namePick').value;
+  let name=''; if(v==='__other__') name=(document.getElementById('nameOther').value||'').trim();
+  else if(v!=='__none__') name=v;
+  raterName=name;
   cur=0; answers=new Array(NQ).fill(null); locked=new Array(NQ).fill(false); quizActive=true;
   hideAll(); show('quiz'); render();
 }
