@@ -214,6 +214,28 @@
     .practices{display:none}
     .tip{border:none;color:inherit}.tip sup{display:none}
   }
+  /* "Not sure / N/A" option */
+  .opt-sep{font-size:12px;color:var(--muted);text-align:center;margin:6px 0 2px}
+  .opt.na{border-style:dashed}
+  .opt.na .lvl{background:#e4eaf5;color:var(--muted)}
+  .opt.na.sel{border-color:var(--muted);background:#eef1f7}
+  .opt.na.sel .lvl{background:var(--muted);color:#fff}
+  /* action plan */
+  .plan{list-style:none;display:flex;flex-direction:column;gap:12px;counter-reset:p}
+  .plan li{position:relative;background:var(--panel2);border:1px solid var(--line);border-radius:12px;
+    padding:14px 16px 14px 52px}
+  .plan li::before{counter-increment:p;content:counter(p);position:absolute;left:14px;top:14px;
+    width:26px;height:26px;border-radius:8px;background:var(--accent);color:#fff;font-weight:800;
+    font-size:14px;display:grid;place-items:center}
+  .plan li .ph{font-weight:700;color:var(--ink)}
+  .plan li .pscore{color:var(--muted);font-weight:600;font-size:13px}
+  .plan li .pstep{font-size:13.5px;color:#2b3859;margin-top:5px}
+  .plan li .pmentor{font-size:13px;color:#0e8c66;margin-top:5px;font-weight:600}
+  /* accessibility */
+  .tip:focus{background:rgba(11,92,255,.12);border-radius:3px}
+  .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+    clip:rect(0 0 0 0);white-space:nowrap;border:0}
+  @media (prefers-reduced-motion: reduce){ *{animation:none!important;transition:none!important} }
   .hide{display:none}
   .fade{animation:fade .35s ease}
   @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
@@ -270,7 +292,7 @@
   <!-- NAME SELECT -->
   <section id="nameSelect" class="card hide">
     <h2 style="font-size:22px;margin-bottom:6px;color:var(--ink)">👋 Who's taking the assessment?</h2>
-    <p style="color:var(--muted);font-size:15px">Pick your name so we can label your result — it's how the team view tells everyone apart.</p>
+    <p style="color:var(--muted);font-size:15px">Pick your name so the team view can tell everyone apart — or choose <b>Prefer not to say</b> to stay anonymous (your result won't carry your name).</p>
     <label class="lbl" style="margin-top:16px;display:block">Your name</label>
     <select id="namePick" class="field" onchange="onNamePick()"></select>
     <input id="nameOther" class="field hide" placeholder="Type your name" autocomplete="off">
@@ -288,10 +310,10 @@
       <button class="btn ghost sm" onclick="cancelQuiz()">✕ Cancel</button>
     </div>
     <div class="progress-head">
-      <span class="step" id="stepLabel">Question 1 of 20</span>
+      <span class="step" id="stepLabel" role="status" aria-live="polite">Question 1 of 20</span>
       <span class="step" id="pct">0%</span>
     </div>
-    <div class="bar"><i id="barFill"></i><div class="segs" id="segs"></div></div>
+    <div class="bar" role="progressbar" aria-label="Assessment progress" aria-valuemin="0" aria-valuemax="100" id="progBar"><i id="barFill"></i><div class="segs" id="segs"></div></div>
     <div style="margin-top:24px">
       <div class="qmeta">
         <span class="emoji" id="qEmoji">📝</span>
@@ -302,8 +324,8 @@
       </div>
       <p class="qdesc" id="qDesc">desc</p>
       <p class="qinstruct">👇 Choose the answer that best matches your team today <span style="font-weight:500;opacity:.8">— or press <b>1–5</b>, then <b>Enter</b>:</span></p>
-      <div class="opts" id="opts"></div>
-      <div class="bench-hint hide" id="qBench"></div>
+      <div class="opts" id="opts" role="group" aria-labelledby="qTitle"></div>
+      <div class="bench-hint hide" id="qBench" role="status" aria-live="polite"></div>
     </div>
     <div class="nav">
       <button class="btn ghost" id="backBtn" onclick="prev()">← Back</button>
@@ -327,7 +349,7 @@
     </div>
     <div class="radar-row" style="margin-top:14px">
       <div>
-        <svg id="radar" viewBox="-60 0 560 420" width="100%" style="max-width:500px;display:block;margin:auto"></svg>
+        <svg id="radar" viewBox="-60 0 560 420" width="100%" style="max-width:500px;display:block;margin:auto" role="img" aria-label="Radar chart of scores"></svg>
         <div class="legend" id="legend">
           <span><i style="background:var(--you)"></i>Your team</span>
           <span><i style="background:var(--bench)"></i>Best-in-class SaaS</span>
@@ -338,6 +360,16 @@
         <p style="color:var(--muted);font-size:14.5px" id="verdict"></p>
         <div id="raterChips" class="raterchips"></div>
       </div>
+    </div>
+  </section>
+
+  <!-- ACTION PLAN -->
+  <section id="actionplan" class="card hide">
+    <h2 id="planTitle" style="font-size:20px;margin-bottom:6px;color:var(--ink)">🎯 Action plan</h2>
+    <p style="color:var(--muted);font-size:14px;margin-bottom:16px">The areas with the biggest gap to best-in-class — the highest-leverage places to start.</p>
+    <ol class="plan" id="planList"></ol>
+    <div class="nav" style="margin-top:18px;justify-content:flex-end">
+      <button class="btn ghost sm" onclick="copyPlan()" id="planBtn">📋 Copy action plan</button>
     </div>
   </section>
 
@@ -408,7 +440,7 @@ function tipify(s){
     if(i<0) return;
     const actual=s.substr(i,term.length);
     const tok='@@TIP'+toks.length+'@@';
-    toks.push('<span class="tip" tabindex="0" data-tip="'+escapeHtml(GLOSSARY[term])+'">'+actual+'<sup>?</sup></span>');
+    toks.push('<span class="tip" tabindex="0" role="note" aria-label="'+escapeHtml(actual+': '+GLOSSARY[term])+'" data-tip="'+escapeHtml(GLOSSARY[term])+'">'+actual+'<sup aria-hidden="true">?</sup></span>');
     s=s.slice(0,i)+tok+s.slice(i+term.length);
   });
   toks.forEach((t,k)=>{ s=s.split('@@TIP'+k+'@@').join(t); });
@@ -701,7 +733,7 @@ const LS={
 /* ============ FLOW ============ */
 function show(id){document.getElementById(id).classList.remove('hide');}
 function hide(id){document.getElementById(id).classList.add('hide');}
-function hideAll(){['home','nameSelect','quiz','teamInput','results','breakdown','history'].forEach(hide);}
+function hideAll(){['home','nameSelect','quiz','teamInput','results','actionplan','breakdown','history'].forEach(hide);}
 function scrollTop(){window.scrollTo({top:0,behavior:'smooth'});}
 function goHome(){ quizActive=false; hideAll(); show('home'); loadHomeExtra(); scrollTop(); }
 
@@ -712,6 +744,7 @@ function buildNameSelect(){
   const sel=document.getElementById('namePick'); if(!sel) return;
   sel.innerHTML='<option value="__none__">— Select your name —</option>'
     +NAMES.map(n=>`<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join('')
+    +'<option value="__anon__">🕶️ Prefer not to say (anonymous)</option>'
     +'<option value="__other__">Other (type a name)…</option>';
 }
 function onNamePick(){
@@ -729,8 +762,9 @@ function startSolo(){
 }
 function beginSolo(){
   const v=document.getElementById('namePick').value;
-  let name=''; if(v==='__other__') name=(document.getElementById('nameOther').value||'').trim();
-  else if(v!=='__none__') name=v;
+  let name='';
+  if(v==='__other__') name=(document.getElementById('nameOther').value||'').trim();
+  else if(v!=='__none__'&&v!=='__anon__') name=v;   // __anon__ and __none__ stay blank (anonymous)
   raterName=name;
   cur=0; answers=new Array(NQ).fill(null); locked=new Array(NQ).fill(false); quizActive=true;
   hideAll(); show('quiz'); render();
@@ -762,10 +796,17 @@ function render(){
   q.opts.forEach((o,i)=>{
     const b=document.createElement('button');
     b.className='opt'+(answers[cur]===i?' sel':'');
+    b.setAttribute('aria-pressed', answers[cur]===i?'true':'false');
     b.innerHTML=`<span class="lvl">${i+1}</span><span class="otxt">${escapeHtml(o[0])}</span>`;
     b.onclick=()=>{ answers[cur]=i; if(locked[cur]) locked[cur]=false; render(); };  // changing the pick re-hides the benchmark
     wrap.appendChild(b);
   });
+  const na=document.createElement('button');
+  na.className='opt na'+(answers[cur]===-1?' sel':'');
+  na.setAttribute('aria-pressed', answers[cur]===-1?'true':'false');
+  na.innerHTML=`<span class="lvl">–</span><span class="otxt">Not sure / doesn't apply <span style="color:var(--muted)">(won't be scored)</span></span>`;
+  na.onclick=()=>{ answers[cur]=-1; if(locked[cur]) locked[cur]=false; render(); };
+  wrap.appendChild(na);
   document.getElementById('backBtn').style.visibility=cur===0?'hidden':'visible';
   const answered=answers[cur]!==null, isLast=cur===NQ-1;
   const nb=document.getElementById('nextBtn');
@@ -796,11 +837,11 @@ function startOverQuiz(){
   cur=0; answers=new Array(NQ).fill(null); locked=new Array(NQ).fill(false); render();
 }
 
-function answersToScores(ans){ return QFLAT.map((f,i)=>DIMS[f.di].questions[f.qi].opts[ans[i]][1]); }
+function answersToScores(ans){ return QFLAT.map((f,i)=> ans[i]===-1 ? null : DIMS[f.di].questions[f.qi].opts[ans[i]][1]); }
 function scoresToDims(scores){
   return DIMS.map((d,di)=>{
-    const vals=QFLAT.map((f,i)=>f.di===di?scores[i]:null).filter(v=>v!==null);
-    return Math.round(vals.reduce((a,b)=>a+b,0)/vals.length);
+    const vals=QFLAT.map((f,i)=>f.di===di?scores[i]:null).filter(v=>v!=null);   // drop N/A (null)
+    return vals.length? Math.round(vals.reduce((a,b)=>a+b,0)/vals.length) : null; // null = whole area N/A
   });
 }
 
@@ -839,16 +880,21 @@ let LAST={dimMean:[],qMean:[]};
 function renderResults(raters, compareDims){
   lastRaters=raters;
   const n=raters.length, multi=n>1;
-  const qMean=QFLAT.map((_,i)=>raters.reduce((a,r)=>a+r.scores[i],0)/n);
-  const raterDims=raters.map(r=>scoresToDims(r.scores));
-  const dimMean=DIMS.map((_,di)=>Math.round(raterDims.reduce((a,rd)=>a+rd[di],0)/n));
-  const dimMin=DIMS.map((_,di)=>Math.min(...raterDims.map(rd=>rd[di])));
-  const dimMax=DIMS.map((_,di)=>Math.max(...raterDims.map(rd=>rd[di])));
+  const mean=arr=>{const v=arr.filter(x=>x!=null); return v.length?v.reduce((a,b)=>a+b,0)/v.length:null;};
+  const qMean=QFLAT.map((_,i)=>mean(raters.map(r=>r.scores[i])));
+  const raterDims=raters.map(r=>scoresToDims(r.scores));                  // entries number|null (N/A area)
+  const dimMean=DIMS.map((_,di)=>{const m=mean(raterDims.map(rd=>rd[di]));return m==null?null:Math.round(m);});
+  const dimMin=DIMS.map((_,di)=>{const v=raterDims.map(rd=>rd[di]).filter(x=>x!=null);return v.length?Math.min(...v):null;});
+  const dimMax=DIMS.map((_,di)=>{const v=raterDims.map(rd=>rd[di]).filter(x=>x!=null);return v.length?Math.max(...v):null;});
   LAST={dimMean,qMean};
 
-  const you=Math.round(dimMean.reduce((a,b)=>a+b,0)/DIMS.length);
-  const bench=Math.round(DIMS.reduce((a,d)=>a+d.bench,0)/DIMS.length);
+  const scoredIdx=DIMS.map((_,i)=>i).filter(i=>dimMean[i]!=null);
+  const you=scoredIdx.length?Math.round(scoredIdx.reduce((a,i)=>a+dimMean[i],0)/scoredIdx.length):0;
+  // benchmark over the SAME areas that were scored, so the comparison is fair
+  const benchSet=scoredIdx.length?scoredIdx.map(i=>DIMS[i].bench):DIMS.map(d=>d.bench);
+  const bench=Math.round(benchSet.reduce((a,b)=>a+b,0)/benchSet.length);
   const gap=Math.max(0,bench-you);
+  const naCount=DIMS.length-scoredIdx.length;
 
   document.getElementById('sYou').textContent=you;
   document.getElementById('sYouLbl').textContent=multi?"Team average":"Your score";
@@ -859,29 +905,35 @@ function renderResults(raters, compareDims){
   document.getElementById('tierEmoji').textContent=tier.emoji;
   document.getElementById('tierName').textContent=tier.name;
   document.getElementById('tierSub').textContent=tier.sub;
-  document.getElementById('raterCount').textContent=multi?`Averaged across ${n} raters`:"";
+  document.getElementById('raterCount').textContent=
+    (multi?`Averaged across ${n} raters`:"")+(naCount?`${multi?' · ':''}${naCount} area${naCount>1?'s':''} marked “not sure” (excluded)`:"");
 
   const trendEl=document.getElementById('trendLine');
   if(compareDims){ const prevYou=overallOf(compareDims); const dd=you-prevYou;
     trendEl.innerHTML=`vs your last ${multi?'team ':''}run (${prevYou}): ${deltaBadge(dd)}`; }
   else trendEl.innerHTML='';
 
-  const ranked=DIMS.map((d,i)=>({d,i,s:dimMean[i],gap:d.bench-dimMean[i]}));
-  const strongest=[...ranked].sort((a,b)=>b.s-a.s)[0];
-  const weakest=[...ranked].sort((a,b)=>b.gap-a.gap)[0];
-  let v=`Your sharpest edge is <b style="color:var(--you)">${strongest.d.emoji} ${strongest.d.short}</b> — already near best-in-class. `+
-    `The biggest opportunity is <b style="color:var(--gold)">${weakest.d.emoji} ${weakest.d.short}</b>, trailing the leaders by ${Math.max(0,weakest.gap)} points. `+
-    (gap<=6?`Overall you're in the elite zone — keep compounding.`:
-     gap<=18?`You're competitive; closing two or three gaps puts you in elite territory.`:
-     `Plenty of green field — the quests below are your fastest route up the tiers.`);
-  if(multi){
-    const widest=DIMS.map((d,i)=>({d,i,spread:dimMax[i]-dimMin[i]})).sort((a,b)=>b.spread-a.spread)[0];
-    if(widest.spread>=25) v+=` Your raters disagree most on <b style="color:var(--danger)">${widest.d.emoji} ${widest.d.short}</b> (${widest.spread}-pt spread) — worth a team conversation.`;
+  const ranked=scoredIdx.map(i=>({d:DIMS[i],i,s:dimMean[i],gap:DIMS[i].bench-dimMean[i]}));
+  let v;
+  if(!ranked.length){ v=`Every area was marked “not sure”, so there's nothing to score yet.`; }
+  else{
+    const strongest=[...ranked].sort((a,b)=>b.s-a.s)[0];
+    const weakest=[...ranked].sort((a,b)=>b.gap-a.gap)[0];
+    v=`Your sharpest edge is <b style="color:var(--you)">${strongest.d.emoji} ${strongest.d.short}</b> — already near best-in-class. `+
+      `The biggest opportunity is <b style="color:var(--gold)">${weakest.d.emoji} ${weakest.d.short}</b>, trailing the leaders by ${Math.max(0,weakest.gap)} points. `+
+      (gap<=6?`Overall you're in the elite zone — keep compounding.`:
+       gap<=18?`You're competitive; closing two or three gaps puts you in elite territory.`:
+       `Plenty of green field — the quests below are your fastest route up the tiers.`);
+    if(multi){
+      const widest=scoredIdx.map(i=>({d:DIMS[i],spread:(dimMax[i]??0)-(dimMin[i]??0)})).sort((a,b)=>b.spread-a.spread)[0];
+      if(widest&&widest.spread>=25) v+=` Your raters disagree most on <b style="color:var(--danger)">${widest.d.emoji} ${widest.d.short}</b> (${widest.spread}-pt spread) — worth a team conversation.`;
+    }
   }
   document.getElementById('verdict').innerHTML=v;
 
   const chips=document.getElementById('raterChips'); chips.innerHTML='';
-  if(multi){ raters.forEach(r=>{const overall=Math.round(scoresToDims(r.scores).reduce((a,b)=>a+b,0)/DIMS.length);
+  if(multi){ raters.forEach(r=>{const ov=scoresToDims(r.scores).filter(x=>x!=null);
+    const overall=ov.length?Math.round(ov.reduce((a,b)=>a+b,0)/ov.length):0;
     const c=document.createElement('span'); c.className='chip'; c.innerHTML=`${escapeHtml(r.name)} <b>${overall}</b>`; chips.appendChild(c);}); }
 
   document.getElementById('legend').innerHTML =
@@ -892,6 +944,7 @@ function renderResults(raters, compareDims){
 
   show('results'); document.getElementById('results').classList.add('fade');
   drawRadar(dimMean,dimMin,dimMax,multi);
+  buildActionPlan(dimMean,qMean,raters,multi); show('actionplan');
   buildBreakdown(dimMean,dimMin,dimMax,qMean,multi,compareDims);
   show('breakdown');
   scrollTop();
@@ -904,7 +957,7 @@ function drawRadar(mean,min,max,multi){
   const NS='http://www.w3.org/2000/svg';
   const ang=i=>(-Math.PI/2)+(i*2*Math.PI/N);
   const pt=(a,r)=>[cx+r*Math.cos(a), cy+r*Math.sin(a)];
-  const path=vals=>{let p='';for(let i=0;i<N;i++){const[a,b]=pt(ang(i),R*(vals[i]/100));p+=(i?'L':'M')+a.toFixed(1)+' '+b.toFixed(1)+' ';}return p+'Z';};
+  const path=vals=>{let p='';for(let i=0;i<N;i++){const[a,b]=pt(ang(i),R*((vals[i]||0)/100));p+=(i?'L':'M')+a.toFixed(1)+' '+b.toFixed(1)+' ';}return p+'Z';};
   const add=(tag,attrs)=>{const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);svg.appendChild(e);return e;};
   [0.25,0.5,0.75,1].forEach(f=>add('path',{d:path(DIMS.map(()=>f*100)),fill:'none',stroke:'#e1e8f5','stroke-width':1}));
   for(let i=0;i<N;i++){
@@ -923,24 +976,40 @@ function drawRadar(mean,min,max,multi){
   }
   // mean / your team (magenta)
   add('path',{d:path(mean),fill:multi?'none':'rgba(255,62,131,.18)',stroke:'#ff3e83','stroke-width':2.8,'stroke-linejoin':'round'});
-  for(let i=0;i<N;i++){const[a,b]=pt(ang(i),R*(mean[i]/100));add('circle',{cx:a,cy:b,r:3.5,fill:'#ff3e83'});}
+  for(let i=0;i<N;i++){ if(mean[i]==null) continue; const[a,b]=pt(ang(i),R*(mean[i]/100));add('circle',{cx:a,cy:b,r:3.5,fill:'#ff3e83'});}
+  // screen-reader summary
+  const summ=DIMS.map((d,i)=>`${d.short}: ${mean[i]==null?'not assessed':mean[i]+' out of 100, target '+d.bench}`).join('. ');
+  svg.setAttribute('aria-label',`Radar chart of scores by area. ${summ}.`);
 }
 
 /* ============ BREAKDOWN ============ */
 function buildBreakdown(mean,min,max,qMean,multi,compareDims){
   const wrap=document.getElementById('dimlist'); wrap.innerHTML='';
   DIMS.forEach((d,di)=>{
-    const s=mean[di], gap=d.bench-s, win=gap<=8;
-    const spread=max[di]-min[di];
+    const s=mean[di];
+    const exHtml=d.examples.map(e=>`<li>${tipify(e[0])} <a href="${e[1]}" target="_blank" rel="noopener">↗ source</a></li>`).join('');
+    const el=document.createElement('div');
+    if(s==null){   // whole area marked "not sure" — show as not scored
+      el.className='dim';
+      el.innerHTML=`
+        <div class="dh"><span class="e">${d.emoji}</span><span class="nm">${d.title}</span>
+          <span class="align">not scored</span>
+          <span class="nums" style="color:var(--muted)">N/A</span></div>
+        <div class="quest"><b>🤷 Not assessed.</b> Everyone marked this “not sure”, so it's left out of the score.</div>
+        <details class="practices"><summary>▸ What best-in-class teams do</summary>
+          <div class="body">${tipify(d.practice)}<ul class="ex">${exHtml}</ul></div></details>`;
+      wrap.appendChild(el); return;
+    }
+    const gap=d.bench-s, win=gap<=8;
+    const spread=(max[di]??s)-(min[di]??s);
     let alignBadge='';
     if(multi){ const cls=spread<=12?'ok':spread<=25?'mid':'split'; const txt=spread<=12?'aligned':spread<=25?'some divergence':'split';
       alignBadge=`<span class="align ${cls}">${txt} · ${min[di]}–${max[di]}</span>`; }
-    const deltaHtml = compareDims ? ' '+deltaBadge(s-compareDims[di]) : '';
+    const deltaHtml = (compareDims && compareDims[di]!=null) ? ' '+deltaBadge(s-compareDims[di]) : '';
     const quest = win
       ? `<b>✅ Strength.</b> At or near best-in-class — protect it and share how you do it.`
-      : `<b>🎯 Quest:</b> ${tipify(questFor(di,qMean))}`;
-    const exHtml=d.examples.map(e=>`<li>${tipify(e[0])} <a href="${e[1]}" target="_blank" rel="noopener">↗ source</a></li>`).join('');
-    const el=document.createElement('div'); el.className='dim'+(win?' win':'');
+      : `<b>🎯 Quest:</b> ${tipify(nextStepText(di,qMean))} ${tipify(d.benchNote)}`;
+    el.className='dim'+(win?' win':'');
     el.innerHTML=`
       <div class="dh"><span class="e">${d.emoji}</span><span class="nm">${d.title}</span>
         ${alignBadge}
@@ -956,17 +1025,54 @@ function buildBreakdown(mean,min,max,qMean,multi,compareDims){
     requestAnimationFrame(()=>setTimeout(()=>{el.querySelector('.fill').style.width=s+'%';},60*di));
   });
 }
-function questFor(di,qMean){
+/* the concrete "move toward …" next step, picking the area's weakest answered question */
+function nextStepText(di,qMean){
   const d=DIMS[di];
   let weak=null;
   d.questions.forEach((q,qi)=>{
-    const flatIdx=QFLAT.findIndex(f=>f.di===di&&f.qi===qi);
-    const m=qMean[flatIdx];
+    const m=qMean[QFLAT.findIndex(f=>f.di===di&&f.qi===qi)];
+    if(m==null) return;                 // skip questions everyone marked N/A
     if(!weak||m<weak.m) weak={q,m};
   });
+  if(!weak) return `Build a baseline here — even a small first step counts.`;
   const sorted=[...weak.q.opts].sort((a,b)=>a[1]-b[1]);
   const nextOpt=sorted.find(o=>o[1]>weak.m+1)||sorted[sorted.length-1];
-  return `Move toward — “${nextOpt[0].replace(/\.$/,'')}.” ${d.benchNote}`;
+  return `Move toward — “${nextOpt[0].replace(/\.$/,'')}.”`;
+}
+
+/* ============ ACTION PLAN ============ */
+let LASTPLAN=[];
+function buildActionPlan(dimMean,qMean,raters,multi){
+  document.getElementById('planTitle').textContent = multi ? '🎯 Team action plan' : '🎯 Your action plan';
+  const items=DIMS.map((d,i)=>({d,i,s:dimMean[i],gap:dimMean[i]==null?-1:d.bench-dimMean[i]}))
+    .filter(x=>x.s!=null && x.gap>0).sort((a,b)=>b.gap-a.gap).slice(0,3);
+  const list=document.getElementById('planList'); list.innerHTML=''; LASTPLAN=[];
+  if(!items.length){
+    list.innerHTML=`<li style="padding-left:16px"><span class="ph">🎉 You're at or above target on every scored area.</span><div class="pstep">Keep it up — and consider raising your own internal bar.</div></li>`;
+    return;
+  }
+  items.forEach(it=>{
+    const step=nextStepText(it.i,qMean);
+    let mentor=null;
+    if(multi){ let best=-1; raters.forEach(r=>{const ds=scoresToDims(r.scores)[it.i]; if(ds!=null&&ds>best){best=ds;mentor={name:r.name,score:ds};}});
+      if(!(mentor&&mentor.score>it.s)) mentor=null; }
+    LASTPLAN.push({area:`${it.d.emoji} ${it.d.short}`, cur:it.s, target:it.d.bench, step, mentor});
+    const li=document.createElement('li');
+    li.innerHTML=`<span class="ph">${it.d.emoji} ${it.d.title}</span> <span class="pscore">(${it.s} → target ${it.d.bench})</span>
+      <div class="pstep">${tipify(step)}</div>
+      ${mentor?`<div class="pmentor">💪 Strongest here: ${escapeHtml(mentor.name)} (${mentor.score}) — a good person to share how.</div>`:''}`;
+    list.appendChild(li);
+  });
+}
+function copyPlan(){
+  if(!LASTPLAN.length){ flash('planBtn','Nothing to copy','📋 Copy action plan'); return; }
+  const lines=['🎯 impact.com · AI Adoption Arena — Action plan',''];
+  LASTPLAN.forEach((p,i)=>{ lines.push(`${i+1}. ${p.area}  (${p.cur} → target ${p.target})`);
+    lines.push(`   • ${p.step.replace(/^Move toward — /,'Next step: ')}`);
+    if(p.mentor) lines.push(`   • Strongest here: ${p.mentor.name} (${p.mentor.score})`);
+    lines.push(''); });
+  const txt=lines.join('\n');
+  navigator.clipboard.writeText(txt).then(()=>flash('planBtn','✓ Copied!','📋 Copy action plan')).catch(()=>alert(txt));
 }
 
 /* ============ ENCODE / DECODE ============ */
@@ -980,7 +1086,7 @@ function decode(code){
     const j=JSON.parse(decodeURIComponent(escape(atob(raw))));
     if(!j||!Array.isArray(j.a)||j.a.length!==NQ) return null;
     for(let i=0;i<NQ;i++){const f=QFLAT[i];const max=DIMS[f.di].questions[f.qi].opts.length;
-      if(typeof j.a[i]!=='number'||j.a[i]<0||j.a[i]>=max) return null;}
+      if(typeof j.a[i]!=='number'||j.a[i]<-1||j.a[i]>=max) return null;}   // -1 = "not sure / N/A"
     return j;
   }catch(e){ return null; }
 }
@@ -1000,7 +1106,9 @@ function copyShare(){
   const emoji=document.getElementById('tierEmoji').textContent;
   const lines=[`${emoji} impact.com · AI Adoption Arena — Tech Writing Scorecard`,
     `Tier: ${tier}  |  ${document.getElementById('sYouLbl').textContent} ${you} vs best-in-class ${bench}`,``];
-  DIMS.forEach((d,di)=>{const s=LAST.dimMean[di];const bars=Math.round(s/10);
+  DIMS.forEach((d,di)=>{const s=LAST.dimMean[di];
+    if(s==null){ lines.push(`${d.emoji} ${d.short.padEnd(13)} ${'·'.repeat(10)} n/a (not scored)`); return; }
+    const bars=Math.round(s/10);
     lines.push(`${d.emoji} ${d.short.padEnd(13)} ${'█'.repeat(bars)}${'░'.repeat(10-bars)} ${s}/100 (target ${d.bench})`);});
   lines.push('','— scored in the impact.com AI Adoption Arena');
   const txt=lines.join('\n');
@@ -1010,9 +1118,9 @@ function flash(id,on,off){const b=document.getElementById(id);b.textContent=on;s
 function escapeHtml(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 
 /* ============ SCORE HELPERS ============ */
-function overallOf(dims){ return Math.round(dims.reduce((a,b)=>a+b,0)/DIMS.length); }
-function snapDims(raters){ const n=raters.length; const rd=raters.map(r=>scoresToDims(r.scores));
-  return DIMS.map((_,di)=>Math.round(rd.reduce((a,x)=>a+x[di],0)/n)); }
+function overallOf(dims){ const v=dims.filter(x=>x!=null); return v.length?Math.round(v.reduce((a,b)=>a+b,0)/v.length):0; }
+function snapDims(raters){ const rd=raters.map(r=>scoresToDims(r.scores));
+  return DIMS.map((_,di)=>{const v=rd.map(x=>x[di]).filter(x=>x!=null); return v.length?Math.round(v.reduce((a,b)=>a+b,0)/v.length):null;}); }
 function tierFor(you){ return [...TIERS].reverse().find(t=>you>=t.min); }
 function deltaBadge(d){ d=Math.round(d);
   if(d>0) return `<span class="delta up">▲ +${d}</span>`;
@@ -1020,6 +1128,7 @@ function deltaBadge(d){ d=Math.round(d);
   return `<span class="delta flat">▬ 0</span>`; }
 /* score -> the option index that produced it (option scores are unique within a question) */
 function scoresToAnswers(scores){ return QFLAT.map((f,i)=>{
+  if(scores[i]==null) return -1;   // N/A
   const opts=DIMS[f.di].questions[f.qi].opts; const idx=opts.findIndex(o=>o[1]===scores[i]); return idx<0?0:idx; }); }
 function encodeRater(r){ return encode(scoresToAnswers(r.scores), r.name); }
 
@@ -1151,7 +1260,8 @@ document.addEventListener('keydown',e=>{
   if(document.getElementById('quiz').classList.contains('hide')) return;
   const tag=(e.target.tagName||'').toLowerCase(); if(tag==='input'||tag==='textarea') return;
   const {di,qi}=QFLAT[cur]; const nopts=DIMS[di].questions[qi].opts.length;
-  if(e.key>='1'&&e.key<='9'){ const i=+e.key-1; if(i<nopts){ answers[cur]=i; if(locked[cur])locked[cur]=false; render(); e.preventDefault(); } }
+  if(e.key==='0'){ answers[cur]=-1; if(locked[cur])locked[cur]=false; render(); e.preventDefault(); }
+  else if(e.key>='1'&&e.key<='9'){ const i=+e.key-1; if(i<nopts){ answers[cur]=i; if(locked[cur])locked[cur]=false; render(); e.preventDefault(); } }
   else if(e.key==='Enter'){ if(!document.getElementById('nextBtn').disabled){ next(); e.preventDefault(); } }
   else if(e.key==='ArrowLeft'||e.key==='Backspace'){ if(cur>0){ prev(); e.preventDefault(); } }
 });
