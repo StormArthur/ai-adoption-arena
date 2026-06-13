@@ -80,6 +80,16 @@
   .btn.primary:hover{filter:brightness(1.05);transform:translateY(-1px)}
   .btn:disabled{opacity:.4;cursor:not-allowed;transform:none!important;box-shadow:none}
   .btn.sm{padding:9px 14px;font-size:13.5px}
+  .btn.big{font-size:18px;font-weight:800;padding:18px 42px;margin:24px auto 6px;display:inline-block;border-radius:14px}
+  .home-secondary{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:4px}
+  .home-secondary .dot{color:var(--line)}
+  .linkbtn{background:none;border:none;color:var(--muted);font:inherit;font-size:14px;font-weight:600;cursor:pointer;padding:4px}
+  .linkbtn:hover{color:var(--accent);text-decoration:underline}
+  .home-about{margin-top:24px;text-align:center}
+  .home-about summary{cursor:pointer;color:var(--muted);font-size:13.5px;font-weight:600;list-style:none}
+  .home-about summary::-webkit-details-marker{display:none}
+  .home-about summary:hover{color:var(--accent)}
+  .home-about .feat{margin-top:14px;text-align:left}
 
   .feat{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin:22px 0}
   .feat div{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:16px}
@@ -222,27 +232,26 @@
     <p class="sub">Benchmark our technical writing team's AI game against best-in-class SaaS documentation teams — solo or as a whole team — and find your quests to level up.</p>
   </header>
 
-  <!-- HOME / MODE SELECT -->
-  <section id="home" class="card fade">
-    <h2 style="font-size:22px;margin-bottom:6px;color:var(--ink)">🎮 Choose your mode</h2>
-    <p style="color:var(--muted);font-size:15px">Answer ~20 quick questions across 8 areas. We score each area 0–100 and overlay it against a benchmark of elite SaaS docs teams — backed by real, cited examples. No jargon required: every question is in plain language, and tricky terms have a hover <span class="tip" tabindex="0" data-tip="Hover or tap a dotted term anywhere in the app to see a plain-language definition.">explainer<sup>?</sup></span>.</p>
-    <div class="mode-grid">
-      <button class="mode" onclick="startSolo()">
-        <div class="ic">🧑‍💻</div><h3>Assess (solo)</h3>
-        <p>Rate the team yourself. Get your radar, tier and quests — plus a share code to send teammates for a group view.</p>
-      </button>
-      <button class="mode" onclick="showTeam()">
-        <div class="ic">👥</div><h3>Build team view</h3>
-        <p>Paste the share codes from several raters to see the team's average, the spread between raters, and where you align or disagree.</p>
-      </button>
+  <!-- HOME -->
+  <section id="home" class="card fade" style="text-align:center">
+    <p style="color:var(--muted);font-size:15.5px;max-width:560px;margin:2px auto 0">
+      A quick, gamified check-in on how our AI adoption compares to best-in-class SaaS documentation teams. About 5 minutes — every question is plain-language.</p>
+    <button class="btn primary big" onclick="startSolo()">🚀 Start assessment</button>
+    <div class="home-secondary">
+      <button class="linkbtn" onclick="showTeam()">👥 Build team view</button>
+      <span class="dot">·</span>
+      <button class="linkbtn" onclick="showHistory()">📈 History</button>
     </div>
     <div id="homeExtra"></div>
-    <div class="feat">
-      <div><h4>🕸️ Radar face-off</h4><p>Our team vs. best-in-class across all 8 areas.</p></div>
-      <div><h4>🏆 Earn your tier</h4><p>🌱 AI-Curious → 🏆 AI-Native. Where do we land?</p></div>
-      <div><h4>📊 Cited benchmarks</h4><p>Targets grounded in 2025–26 practices, with sources.</p></div>
-      <div><h4>🗺️ Level-up quests</h4><p>Concrete next moves from how the best teams operate.</p></div>
-    </div>
+    <details class="home-about">
+      <summary>What you'll get</summary>
+      <div class="feat">
+        <div><h4>🕸️ Radar face-off</h4><p>Our team vs. best-in-class across all 8 areas.</p></div>
+        <div><h4>🏆 Earn your tier</h4><p>🌱 AI-Curious → 🏆 AI-Native. Where do we land?</p></div>
+        <div><h4>📊 Cited benchmarks</h4><p>Targets grounded in 2025–26 practices, with sources.</p></div>
+        <div><h4>🗺️ Level-up quests</h4><p>Concrete next moves from how the best teams operate.</p></div>
+      </div>
+    </details>
   </section>
 
   <!-- TEAM INPUT -->
@@ -275,6 +284,7 @@
   <section id="quiz" class="card hide">
     <div class="quiz-top">
       <button class="btn ghost sm" onclick="startOverQuiz()">↻ Start over</button>
+      <button class="btn ghost sm" onclick="takeBreak()">⏸ Take a break</button>
       <button class="btn ghost sm" onclick="cancelQuiz()">✕ Cancel</button>
     </div>
     <div class="progress-head">
@@ -770,8 +780,15 @@ function next(){
   if(cur<NQ-1){cur++;render();} else finishSolo();
 }
 function prev(){ if(cur>0){cur--;render();} }
+function takeBreak(){
+  // save progress and leave; the home screen will offer "Resume"
+  saveProgress(); goHome();
+}
 function cancelQuiz(){
-  // leave the questionnaire; progress stays saved so the home screen offers "Resume"
+  // discard this assessment entirely
+  if(answers.some(a=>a!==null) && !confirm('Cancel this assessment and delete your progress? This can’t be undone.')) return;
+  LS.del('aia_progress'); quizActive=false;
+  cur=0; answers=new Array(NQ).fill(null); locked=new Array(NQ).fill(false);
   goHome();
 }
 function startOverQuiz(){
@@ -1064,7 +1081,7 @@ function loadHomeExtra(){
     const done=p.answers.filter(a=>a!==null).length;
     if(done<NQ){ const div=document.createElement('div'); div.className='home-banner';
       div.innerHTML=`<div class="txt">⏳ Resume your assessment<small>${done} of ${NQ} answered${p.raterName?` · ${escapeHtml(p.raterName)}`:''}</small></div>
-        <button class="btn primary sm" onclick="resumeSolo()">Resume →</button>
+        <button class="btn ghost sm" onclick="resumeSolo()">Resume →</button>
         <button class="btn ghost sm" onclick="discardProgress()">Discard</button>`;
       ex.appendChild(div); }
   }
