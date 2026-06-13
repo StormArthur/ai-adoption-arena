@@ -39,6 +39,8 @@
   .card{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:26px;
     box-shadow:var(--shadow);margin-bottom:20px}
 
+  .quiz-top{display:flex;justify-content:flex-end;gap:8px;margin-bottom:14px}
+  .quiz-top .btn{padding:7px 12px;font-size:12.5px}
   .progress-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
   .progress-head .step{color:var(--muted);font-size:14px;font-weight:600}
   .bar{height:8px;background:var(--panel2);border-radius:99px;overflow:hidden}
@@ -271,6 +273,10 @@
 
   <!-- QUIZ -->
   <section id="quiz" class="card hide">
+    <div class="quiz-top">
+      <button class="btn ghost sm" onclick="startOverQuiz()">↻ Start over</button>
+      <button class="btn ghost sm" onclick="cancelQuiz()">✕ Cancel</button>
+    </div>
     <div class="progress-head">
       <span class="step" id="stepLabel">Question 1 of 20</span>
       <span class="step" id="pct">0%</span>
@@ -764,6 +770,14 @@ function next(){
   if(cur<NQ-1){cur++;render();} else finishSolo();
 }
 function prev(){ if(cur>0){cur--;render();} }
+function cancelQuiz(){
+  // leave the questionnaire; progress stays saved so the home screen offers "Resume"
+  goHome();
+}
+function startOverQuiz(){
+  if(answers.some(a=>a!==null) && !confirm('Start over from question 1? Your current answers will be cleared.')) return;
+  cur=0; answers=new Array(NQ).fill(null); locked=new Array(NQ).fill(false); render();
+}
 
 function answersToScores(ans){ return QFLAT.map((f,i)=>DIMS[f.di].questions[f.qi].opts[ans[i]][1]); }
 function scoresToDims(scores){
