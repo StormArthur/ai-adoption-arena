@@ -229,8 +229,11 @@
     font-size:14px;display:grid;place-items:center}
   .plan li .ph{font-weight:700;color:var(--ink)}
   .plan li .pscore{color:var(--muted);font-weight:600;font-size:13px}
-  .plan li .pstep{font-size:13.5px;color:#2b3859;margin-top:5px}
-  .plan li .pmentor{font-size:13px;color:#0e8c66;margin-top:5px;font-weight:600}
+  .plan li .pstep{font-size:13.5px;color:#2b3859;margin-top:5px;font-weight:600}
+  .plan li .phow{font-size:12px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--muted);margin-top:9px}
+  .plan li .plays{margin:5px 0 0;padding-left:18px}
+  .plan li .plays li{font-size:13px;color:#2b3859;margin-bottom:4px}
+  .plan li .pmentor{font-size:13px;color:#0e8c66;margin-top:8px;font-weight:600}
   /* accessibility */
   .tip:focus{background:rgba(11,92,255,.12);border-radius:3px}
   .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
@@ -703,6 +706,59 @@ const DIMS = [
   },
 ];
 
+/* Concrete "how to get there" plays per area, tagged with the score you're climbing past.
+   The action plan shows the plays still ahead of the team's current score. */
+const PLAYS = {
+  draft:[
+    [40,"Create 2–3 shared, reusable AI prompt templates (release note, how-to, FAQ) and keep them in a space everyone can copy."],
+    [65,"Make “draft from source” the habit: paste the ticket, spec or call transcript into the prompt so AI drafts from real material, not a blank page."],
+    [85,"Move drafting into an authoring tool with a built-in AI panel so writers draft in place instead of copy-pasting from a chatbot."],
+    [100,"Wire trusted sources (tickets, transcripts, code changes) into the workflow so first drafts are generated automatically for writers to curate."],
+  ],
+  quality:[
+    [40,"Write down the top ~20 style rules (approved terms, words-to-avoid, tone) so they're explicit and checkable."],
+    [65,"Set up an automated style linter (e.g. Vale) on top of the Microsoft or Google style guide, run in the editor as writers work."],
+    [85,"Run the style check automatically on every change in the publishing pipeline, so issues are caught before human review."],
+    [100,"Make the check a publish gate and add an AI pass that rewrites flagged sentences (passive voice, jargon, reading level, inclusive language)."],
+  ],
+  search:[
+    [40,"Improve plain keyword search first — add structure, tags and filters so the right page is findable."],
+    [65,"Pilot an “Ask AI” answer box (e.g. kapa.ai, Algolia AskAI, Inkeep) on one high-traffic section of the docs."],
+    [85,"Roll cited AI answers out across the whole site, and start logging what people searched for but didn't find."],
+    [100,"Publish a machine-readable copy of the docs (an llms.txt file plus plain-text / Markdown pages) so outside AI tools answer accurately about us."],
+  ],
+  loc:[
+    [40,"Start an approved-terms glossary for key product terms so translations stay consistent."],
+    [65,"Add AI machine translation with a human review step for high-traffic pages, and keep a translation memory of approved translations."],
+    [85,"Move translation into the publishing pipeline so new and changed pages are picked up continuously, not in big batches."],
+    [100,"Add automatic quality scoring so only low-confidence or sensitive text is routed to a human reviewer."],
+  ],
+  assistant:[
+    [40,"Stand up an internal, doc-grounded assistant (e.g. kapa.ai, Inkeep) for the support team as a low-risk pilot."],
+    [65,"Launch a customer-facing assistant that answers only from the docs and shows its sources."],
+    [85,"Configure it to say “I'm not sure” or hand off to a human when confidence is low, so it never bluffs."],
+    [100,"Review the assistant's failed and low-confidence answers on a set cadence and turn each one into a doc fix."],
+  ],
+  automation:[
+    [40,"Move docs into version control alongside the code (docs-as-code) so changes are reviewed and tracked."],
+    [65,"Auto-generate the API reference from the OpenAPI definition so it never drifts from the product."],
+    [85,"Add automated tests for code examples and auto-refresh screenshots so samples never go stale."],
+    [100,"Let AI draft release notes from the change history in the pipeline (human-approved) and auto-publish a machine-readable docs copy."],
+  ],
+  analytics:[
+    [40,"Start reading support tickets and search logs monthly to spot recurring documentation gaps."],
+    [65,"Track zero-result searches, group them into topics, and aim for an 80%+ “found it” rate."],
+    [85,"Use AI to cluster failed searches, unanswered assistant questions and tickets into a ranked list of content gaps."],
+    [100,"Run a ranked backlog scored by expected impact (fewer support tickets, better search success) and review it every cycle."],
+  ],
+  skills:[
+    [40,"Create a shared prompt library — a living space where writers post the prompts that actually work."],
+    [65,"Run regular AI upskilling: short sessions, a “prompt of the week”, and pair-prompting."],
+    [85,"Publish written ground rules — what AI may and may not be used for, privacy and ownership, and the quality bar."],
+    [100,"Bake AI skill into how we hire, onboard and grow writers, with a human always owning the final edit."],
+  ],
+};
+
 const TIERS = [
   {min:0,  emoji:"🌱", name:"AI-Curious",       sub:"Toes in the water. Huge upside ahead."},
   {min:35, emoji:"🧪", name:"AI-Experimenter",  sub:"Real experiments running — time to systematize."},
@@ -1053,13 +1109,17 @@ function buildActionPlan(dimMean,qMean,raters,multi){
   }
   items.forEach(it=>{
     const step=nextStepText(it.i,qMean);
+    const plays=(PLAYS[it.d.key]||[]).filter(p=>p[0]>it.s).slice(0,3).map(p=>p[1]);
     let mentor=null;
     if(multi){ let best=-1; raters.forEach(r=>{const ds=scoresToDims(r.scores)[it.i]; if(ds!=null&&ds>best){best=ds;mentor={name:r.name,score:ds};}});
       if(!(mentor&&mentor.score>it.s)) mentor=null; }
-    LASTPLAN.push({area:`${it.d.emoji} ${it.d.short}`, cur:it.s, target:it.d.bench, step, mentor});
+    LASTPLAN.push({area:`${it.d.emoji} ${it.d.short}`, cur:it.s, target:it.d.bench, step, plays, mentor});
+    const playsHtml = plays.length
+      ? `<div class="phow">How to get there:</div><ul class="plays">${plays.map(p=>`<li>${tipify(p)}</li>`).join('')}</ul>` : '';
     const li=document.createElement('li');
     li.innerHTML=`<span class="ph">${it.d.emoji} ${it.d.title}</span> <span class="pscore">(${it.s} → target ${it.d.bench})</span>
       <div class="pstep">${tipify(step)}</div>
+      ${playsHtml}
       ${mentor?`<div class="pmentor">💪 Strongest here: ${escapeHtml(mentor.name)} (${mentor.score}) — a good person to share how.</div>`:''}`;
     list.appendChild(li);
   });
@@ -1068,8 +1128,9 @@ function copyPlan(){
   if(!LASTPLAN.length){ flash('planBtn','Nothing to copy','📋 Copy action plan'); return; }
   const lines=['🎯 impact.com · AI Adoption Arena — Action plan',''];
   LASTPLAN.forEach((p,i)=>{ lines.push(`${i+1}. ${p.area}  (${p.cur} → target ${p.target})`);
-    lines.push(`   • ${p.step.replace(/^Move toward — /,'Next step: ')}`);
-    if(p.mentor) lines.push(`   • Strongest here: ${p.mentor.name} (${p.mentor.score})`);
+    lines.push(`   ${p.step.replace(/^Move toward — /,'Next step: ')}`);
+    if(p.plays&&p.plays.length){ lines.push('   How to get there:'); p.plays.forEach(x=>lines.push(`     • ${x}`)); }
+    if(p.mentor) lines.push(`   Strongest here: ${p.mentor.name} (${p.mentor.score})`);
     lines.push(''); });
   const txt=lines.join('\n');
   navigator.clipboard.writeText(txt).then(()=>flash('planBtn','✓ Copied!','📋 Copy action plan')).catch(()=>alert(txt));
