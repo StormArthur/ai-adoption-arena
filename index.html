@@ -221,19 +221,23 @@
   .opt.na.sel{border-color:var(--muted);background:#eef1f7}
   .opt.na.sel .lvl{background:var(--muted);color:#fff}
   /* action plan */
-  .plan{list-style:none;display:flex;flex-direction:column;gap:12px;counter-reset:p}
-  .plan li{position:relative;background:var(--panel2);border:1px solid var(--line);border-radius:12px;
-    padding:14px 16px 14px 52px}
-  .plan li::before{counter-increment:p;content:counter(p);position:absolute;left:14px;top:14px;
-    width:26px;height:26px;border-radius:8px;background:var(--accent);color:#fff;font-weight:800;
-    font-size:14px;display:grid;place-items:center}
-  .plan li .ph{font-weight:700;color:var(--ink)}
-  .plan li .pscore{color:var(--muted);font-weight:600;font-size:13px}
-  .plan li .pstep{font-size:13.5px;color:#2b3859;margin-top:5px;font-weight:600}
-  .plan li .phow{font-size:12px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--muted);margin-top:9px}
-  .plan li .plays{margin:5px 0 0;padding-left:18px}
-  .plan li .plays li{font-size:13px;color:#2b3859;margin-bottom:4px}
-  .plan li .pmentor{font-size:13px;color:#0e8c66;margin-top:8px;font-weight:600}
+  .plan{list-style:none;display:flex;flex-direction:column;gap:14px}
+  .pcard{background:var(--panel2);border:1px solid var(--line);border-left:4px solid var(--accent);
+    border-radius:12px;padding:16px 18px}
+  .pcard-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .pnum{flex:none;width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;
+    font-weight:800;font-size:14px;display:grid;place-items:center}
+  .ptitle{font-weight:750;color:var(--ink);font-size:15.5px;flex:1;min-width:150px}
+  .pgap{font-size:12.5px;font-weight:800;color:var(--ink);background:#fff;border:1px solid var(--line);
+    border-radius:999px;padding:3px 11px;white-space:nowrap}
+  .pnext{font-size:14px;color:var(--ink);margin:11px 0 2px;font-weight:600}
+  .psteps{display:flex;flex-direction:column;gap:11px;margin-top:12px;border-top:1px dashed var(--line);padding-top:13px}
+  .pstep-do{font-size:13.5px;font-weight:700;color:#15223f}
+  .pstep-do .sdot{display:inline-grid;place-items:center;width:19px;height:19px;border-radius:6px;
+    background:#dbe6ff;color:var(--accent);font-size:11px;font-weight:800;margin-right:8px;vertical-align:middle}
+  .pstep-like{font-size:13px;color:#5d6b8a;margin-top:3px;margin-left:27px;line-height:1.5}
+  .pmentor{font-size:13px;color:#0e8c66;margin-top:13px;font-weight:600;background:rgba(18,184,134,.08);
+    border-radius:8px;padding:8px 11px}
   /* accessibility */
   .tip:focus{background:rgba(11,92,255,.12);border-radius:3px}
   .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
@@ -387,13 +391,13 @@
     </div>
     <div class="nav" style="margin-top:22px">
       <button class="btn ghost" onclick="restart()">↻ Start over</button>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
-        <button class="btn ghost sm" id="linkBtn" onclick="copyLink()">🔗 Copy link</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;align-items:center">
         <button class="btn ghost sm" id="copyCodeBtn" onclick="copyCode()">📋 Copy code</button>
+        <button class="btn ghost sm" id="shareBtn" onclick="copyShare()">📊 Copy scorecard</button>
         <button class="btn ghost sm" onclick="downloadRadar()">🖼️ Radar PNG</button>
         <button class="btn ghost sm" onclick="printReport()">🖨️ Print / PDF</button>
         <button class="btn ghost sm" onclick="showHistory()">📈 History</button>
-        <button class="btn primary sm" onclick="copyShare()" id="shareBtn">📊 Copy scorecard</button>
+        <button class="btn primary" id="linkBtn" onclick="copyLink()">🔗 Copy link to share</button>
       </div>
     </div>
   </section>
@@ -710,52 +714,52 @@ const DIMS = [
    The action plan shows the plays still ahead of the team's current score. */
 const PLAYS = {
   draft:[
-    [40,"Create 2–3 shared, reusable AI prompt templates (release note, how-to, FAQ) and keep them in a space everyone can copy."],
-    [65,"Make “draft from source” the habit: paste the ticket, spec or call transcript into the prompt so AI drafts from real material, not a blank page."],
-    [85,"Move drafting into an authoring tool with a built-in AI panel so writers draft in place instead of copy-pasting from a chatbot."],
-    [100,"Wire trusted sources (tickets, transcripts, code changes) into the workflow so first drafts are generated automatically for writers to curate."],
+    {at:40,do:"Create 2–3 shared, reusable AI prompt templates (release note, how-to, FAQ).",like:"Keep them in a Notion/Confluence page; a writer copies the “release note” prompt, pastes the changelog, and gets a clean on-brand draft in seconds instead of improvising from scratch."},
+    {at:65,do:"Make “draft from source” the habit — prompt from the ticket, spec or transcript.",like:"Before writing, the writer drops the Jira ticket and the recorded-demo transcript into the template, so the draft is grounded in real product detail rather than invented."},
+    {at:85,do:"Move drafting into an authoring tool with a built-in AI panel.",like:"Writers click “AI draft” inside the editor and refine in place — no copy-paste round-trips to a separate chatbot, and the house style is applied automatically."},
+    {at:100,do:"Wire trusted sources into the workflow so drafts generate automatically.",like:"When engineering merges a change, a draft release note is auto-created from the commit and assigned to a writer to fact-check and polish."},
   ],
   quality:[
-    [40,"Write down the top ~20 style rules (approved terms, words-to-avoid, tone) so they're explicit and checkable."],
-    [65,"Set up an automated style linter (e.g. Vale) on top of the Microsoft or Google style guide, run in the editor as writers work."],
-    [85,"Run the style check automatically on every change in the publishing pipeline, so issues are caught before human review."],
-    [100,"Make the check a publish gate and add an AI pass that rewrites flagged sentences (passive voice, jargon, reading level, inclusive language)."],
+    {at:40,do:"Write down your top ~20 style rules (approved terms, words-to-avoid, tone).",like:"A one-page house style says “use sign in, not log in”, bans vague words like “simply”, and sets the Oxford comma rule — so reviews stop relitigating the same points."},
+    {at:65,do:"Set up an automated style linter (e.g. Vale) on the Microsoft or Google style guide.",like:"Vale runs in the writer's editor and underlines passive voice, banned words and wrong terms as they type, the way a spell-checker does."},
+    {at:85,do:"Run the style check automatically on every change in the publishing pipeline.",like:"Each doc change triggers the check and shows pass/fail before a human reviews, so reviewers spend their time on substance, not commas."},
+    {at:100,do:"Make the check a publish gate and add an AI rewrite pass.",like:"A page can't ship until checks pass, and an AI proposes fixes for flagged sentences (rewrites passive voice, simplifies reading level) for the writer to accept or reject."},
   ],
   search:[
-    [40,"Improve plain keyword search first — add structure, tags and filters so the right page is findable."],
-    [65,"Pilot an “Ask AI” answer box (e.g. kapa.ai, Algolia AskAI, Inkeep) on one high-traffic section of the docs."],
-    [85,"Roll cited AI answers out across the whole site, and start logging what people searched for but didn't find."],
-    [100,"Publish a machine-readable copy of the docs (an llms.txt file plus plain-text / Markdown pages) so outside AI tools answer accurately about us."],
+    {at:40,do:"Improve plain keyword search first — structure, tags and filters.",like:"Pages get consistent titles, tags and a clear nav, so a keyword search reliably lands people on the right page."},
+    {at:65,do:"Pilot an “Ask AI” answer box on one high-traffic section.",like:"On “Getting started”, a kapa.ai / Inkeep / Algolia widget answers “how do I…” questions in prose with links to the source pages."},
+    {at:85,do:"Roll cited AI answers across the site and log search misses.",like:"Every page has “Ask AI”, and a weekly report lists the top questions that returned nothing — feeding straight into the content backlog."},
+    {at:100,do:"Publish a machine-readable copy (an llms.txt file + Markdown pages).",like:"When a customer asks ChatGPT or Copilot about our product, it can fetch a plain-text version of our docs and answer accurately and up to date."},
   ],
   loc:[
-    [40,"Start an approved-terms glossary for key product terms so translations stay consistent."],
-    [65,"Add AI machine translation with a human review step for high-traffic pages, and keep a translation memory of approved translations."],
-    [85,"Move translation into the publishing pipeline so new and changed pages are picked up continuously, not in big batches."],
-    [100,"Add automatic quality scoring so only low-confidence or sensitive text is routed to a human reviewer."],
+    {at:40,do:"Start an approved-terms glossary.",like:"A shared sheet maps key product terms to the approved translation in each language, so “dashboard” is always rendered the same way."},
+    {at:65,do:"Add AI machine translation + human review for high-traffic pages, with a translation memory.",like:"DeepL or an LLM produces a first pass, a bilingual reviewer fixes the top pages, and approved sentences are stored so the same text is never re-translated."},
+    {at:85,do:"Move translation into the publishing pipeline (continuous).",like:"When an English page changes, only the changed strings are sent for translation and the localized page updates within hours — not in next quarter's batch."},
+    {at:100,do:"Add automatic quality scoring before human review.",like:"An automated score flags weak or sensitive translations; only those go to a human, so reviewers spend their time where it actually matters."},
   ],
   assistant:[
-    [40,"Stand up an internal, doc-grounded assistant (e.g. kapa.ai, Inkeep) for the support team as a low-risk pilot."],
-    [65,"Launch a customer-facing assistant that answers only from the docs and shows its sources."],
-    [85,"Configure it to say “I'm not sure” or hand off to a human when confidence is low, so it never bluffs."],
-    [100,"Review the assistant's failed and low-confidence answers on a set cadence and turn each one into a doc fix."],
+    {at:40,do:"Stand up an internal, doc-grounded assistant for support.",like:"Support agents ask an internal bot grounded on the help centre and get cited answers, cutting the time they spend digging through docs."},
+    {at:65,do:"Launch a customer-facing assistant that answers only from the docs, with sources.",like:"An “Ask AI” on the help centre answers customer questions and links the exact article it drew from, so they can dig deeper."},
+    {at:85,do:"Make it say “I'm not sure” / hand off when confidence is low.",like:"When the bot isn't confident it stops guessing and offers to connect to a human — which protects trust far more than a wrong answer."},
+    {at:100,do:"Turn failed answers into doc fixes on a cadence.",like:"Each week the team reviews the bot's “couldn't answer” list and writes or updates the articles that close those gaps, so the bot keeps getting smarter."},
   ],
   automation:[
-    [40,"Move docs into version control alongside the code (docs-as-code) so changes are reviewed and tracked."],
-    [65,"Auto-generate the API reference from the OpenAPI definition so it never drifts from the product."],
-    [85,"Add automated tests for code examples and auto-refresh screenshots so samples never go stale."],
-    [100,"Let AI draft release notes from the change history in the pipeline (human-approved) and auto-publish a machine-readable docs copy."],
+    {at:40,do:"Move docs into version control alongside the code (docs-as-code).",like:"Docs live in the repo; changes go through pull requests and review like code, with full history and easy rollback."},
+    {at:65,do:"Auto-generate the API reference from the OpenAPI definition.",like:"When engineers update the API spec, the reference pages regenerate automatically — nobody hand-edits endpoint tables that drift out of date."},
+    {at:85,do:"Auto-test code examples and auto-refresh screenshots.",like:"A pipeline job runs every code sample and re-captures UI screenshots, so a broken example or a stale screenshot fails the build before users ever see it."},
+    {at:100,do:"AI-draft release notes in the pipeline + auto-publish a machine-readable copy.",like:"On each release, AI drafts the “what's new” from the change history for a writer to approve, and the llms.txt copy regenerates automatically."},
   ],
   analytics:[
-    [40,"Start reading support tickets and search logs monthly to spot recurring documentation gaps."],
-    [65,"Track zero-result searches, group them into topics, and aim for an 80%+ “found it” rate."],
-    [85,"Use AI to cluster failed searches, unanswered assistant questions and tickets into a ranked list of content gaps."],
-    [100,"Run a ranked backlog scored by expected impact (fewer support tickets, better search success) and review it every cycle."],
+    {at:40,do:"Read support tickets and search logs monthly for gaps.",like:"Once a month someone skims the top tickets and searches and jots down five concrete article ideas."},
+    {at:65,do:"Track zero-result searches; aim for an 80%+ “found it” rate.",like:"A dashboard shows searches that returned nothing, grouped by topic, and you commission one solid article per recurring miss."},
+    {at:85,do:"Use AI to cluster tickets/searches/bot misses into ranked gaps.",like:"AI groups thousands of questions into themes like “SSO setup” with a volume count and a suggested article, exported as a ready-made backlog."},
+    {at:100,do:"Run a ranked backlog scored by expected impact.",like:"Each item carries an impact score (tickets it could deflect, search volume); the team works top-down and then measures the actual drop in tickets."},
   ],
   skills:[
-    [40,"Create a shared prompt library — a living space where writers post the prompts that actually work."],
-    [65,"Run regular AI upskilling: short sessions, a “prompt of the week”, and pair-prompting."],
-    [85,"Publish written ground rules — what AI may and may not be used for, privacy and ownership, and the quality bar."],
-    [100,"Bake AI skill into how we hire, onboard and grow writers, with a human always owning the final edit."],
+    {at:40,do:"Create a shared prompt library.",like:"A living page where writers post the prompts that work, each with a one-line note on when to use it."},
+    {at:65,do:"Run regular AI upskilling.",like:"A monthly 30-minute session, a “prompt of the week” in Slack, and the occasional pair-prompting on a real doc."},
+    {at:85,do:"Publish written ground rules.",like:"A short policy covers what AI may and may not touch, privacy and ownership of content, and the quality bar expected before anything publishes."},
+    {at:100,do:"Bake AI skill into hiring, onboarding and growth.",like:"Job descriptions mention AI-assisted writing, new hires learn the prompt library in week one, and growth plans include AI fluency — with a human always owning the final edit."},
   ],
 };
 
@@ -1107,20 +1111,26 @@ function buildActionPlan(dimMean,qMean,raters,multi){
     list.innerHTML=`<li style="padding-left:16px"><span class="ph">🎉 You're at or above target on every scored area.</span><div class="pstep">Keep it up — and consider raising your own internal bar.</div></li>`;
     return;
   }
-  items.forEach(it=>{
-    const step=nextStepText(it.i,qMean);
-    const plays=(PLAYS[it.d.key]||[]).filter(p=>p[0]>it.s).slice(0,3).map(p=>p[1]);
+  items.forEach((it,idx)=>{
+    const step=nextStepText(it.i,qMean).replace(/^Move toward — /,'');
+    const plays=(PLAYS[it.d.key]||[]).filter(p=>p.at>it.s).slice(0,3);
     let mentor=null;
     if(multi){ let best=-1; raters.forEach(r=>{const ds=scoresToDims(r.scores)[it.i]; if(ds!=null&&ds>best){best=ds;mentor={name:r.name,score:ds};}});
       if(!(mentor&&mentor.score>it.s)) mentor=null; }
     LASTPLAN.push({area:`${it.d.emoji} ${it.d.short}`, cur:it.s, target:it.d.bench, step, plays, mentor});
-    const playsHtml = plays.length
-      ? `<div class="phow">How to get there:</div><ul class="plays">${plays.map(p=>`<li>${tipify(p)}</li>`).join('')}</ul>` : '';
-    const li=document.createElement('li');
-    li.innerHTML=`<span class="ph">${it.d.emoji} ${it.d.title}</span> <span class="pscore">(${it.s} → target ${it.d.bench})</span>
-      <div class="pstep">${tipify(step)}</div>
-      ${playsHtml}
-      ${mentor?`<div class="pmentor">💪 Strongest here: ${escapeHtml(mentor.name)} (${mentor.score}) — a good person to share how.</div>`:''}`;
+    const stepsHtml = plays.length ? `<div class="psteps">${plays.map((p,k)=>
+        `<div class="pstep-item"><div class="pstep-do"><span class="sdot">${k+1}</span>${tipify(p.do)}</div>
+           <div class="pstep-like">${tipify(p.like)}</div></div>`).join('')}</div>` : '';
+    const li=document.createElement('li'); li.className='pcard';
+    li.innerHTML=`
+      <div class="pcard-head">
+        <span class="pnum">${idx+1}</span>
+        <span class="ptitle">${it.d.emoji} ${it.d.title}</span>
+        <span class="pgap">${it.s} <span style="opacity:.6">→ target</span> ${it.d.bench}</span>
+      </div>
+      <div class="pnext">🎯 Aim for: ${tipify(step)}</div>
+      ${stepsHtml}
+      ${mentor?`<div class="pmentor">💪 Strongest here: ${escapeHtml(mentor.name)} (${mentor.score}) — a great person to lead this.</div>`:''}`;
     list.appendChild(li);
   });
 }
@@ -1128,8 +1138,9 @@ function copyPlan(){
   if(!LASTPLAN.length){ flash('planBtn','Nothing to copy','📋 Copy action plan'); return; }
   const lines=['🎯 impact.com · AI Adoption Arena — Action plan',''];
   LASTPLAN.forEach((p,i)=>{ lines.push(`${i+1}. ${p.area}  (${p.cur} → target ${p.target})`);
-    lines.push(`   ${p.step.replace(/^Move toward — /,'Next step: ')}`);
-    if(p.plays&&p.plays.length){ lines.push('   How to get there:'); p.plays.forEach(x=>lines.push(`     • ${x}`)); }
+    lines.push(`   Aim for: ${p.step}`);
+    if(p.plays&&p.plays.length){ lines.push('   How to get there:');
+      p.plays.forEach((x,k)=>{ lines.push(`     ${k+1}. ${x.do}`); lines.push(`        ↳ ${x.like}`); }); }
     if(p.mentor) lines.push(`   Strongest here: ${p.mentor.name} (${p.mentor.score})`);
     lines.push(''); });
   const txt=lines.join('\n');
@@ -1270,7 +1281,7 @@ function copyLink(){
   const base=location.href.split('#')[0];
   const url = lastRaters.length>1 ? base+'#team='+encodeURIComponent(codes.join(','))
                                   : base+'#r='+encodeURIComponent(codes[0]);
-  navigator.clipboard.writeText(url).then(()=>flash('linkBtn','✓ Link copied!','🔗 Copy link')).catch(()=>prompt('Copy this link:',url));
+  navigator.clipboard.writeText(url).then(()=>flash('linkBtn','✓ Link copied!','🔗 Copy link to share')).catch(()=>prompt('Copy this link:',url));
 }
 function downloadRadar(){
   const svg=document.getElementById('radar'); if(!svg) return;
