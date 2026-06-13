@@ -373,7 +373,7 @@
   <!-- ACTION PLAN -->
   <section id="actionplan" class="card hide">
     <h2 id="planTitle" style="font-size:20px;margin-bottom:6px;color:var(--ink)">🎯 Action plan</h2>
-    <p style="color:var(--muted);font-size:14px;margin-bottom:16px">The areas with the biggest gap to best-in-class — the highest-leverage places to start.</p>
+    <p style="color:var(--muted);font-size:14px;margin-bottom:16px">Every area below best-in-class, ranked from lowest adoption upward — start at the top.</p>
     <ol class="plan" id="planList"></ol>
     <div class="nav" style="margin-top:18px;justify-content:flex-end">
       <button class="btn ghost sm" onclick="copyPlan()" id="planBtn">📋 Copy action plan</button>
@@ -714,49 +714,49 @@ const DIMS = [
    The action plan shows the plays still ahead of the team's current score. */
 const PLAYS = {
   draft:[
-    {at:40,do:"Create 2–3 shared, reusable AI prompt templates (release note, how-to, FAQ).",like:"Keep them in a Notion/Confluence page; a writer copies the “release note” prompt, pastes the changelog, and gets a clean on-brand draft in seconds instead of improvising from scratch."},
+    {at:40,do:"Create 2–3 shared, reusable AI prompt templates (release note, how-to, FAQ).",like:"Keep them in a GitBook space everyone can copy; a writer grabs the “release note” prompt, pastes the changelog, and gets a clean on-brand draft in seconds instead of improvising."},
     {at:65,do:"Make “draft from source” the habit — prompt from the ticket, spec or transcript.",like:"Before writing, the writer drops the Jira ticket and the recorded-demo transcript into the template, so the draft is grounded in real product detail rather than invented."},
-    {at:85,do:"Move drafting into an authoring tool with a built-in AI panel.",like:"Writers click “AI draft” inside the editor and refine in place — no copy-paste round-trips to a separate chatbot, and the house style is applied automatically."},
-    {at:100,do:"Wire trusted sources into the workflow so drafts generate automatically.",like:"When engineering merges a change, a draft release note is auto-created from the commit and assigned to a writer to fact-check and polish."},
+    {at:85,do:"Draft inside GitBook using its AI/editor features instead of a separate chatbot.",like:"Writers draft and refine on the page in GitBook (with GitBook Assistant's help) — no copy-paste round-trips, and the result already sits where it'll publish."},
+    {at:100,do:"Let the GitBook Agent / a Git-synced pipeline create drafts automatically from changes.",like:"When engineering ships a change, the GitBook Agent proposes a draft page or release note for a writer to fact-check and polish, rather than starting from nothing."},
   ],
   quality:[
     {at:40,do:"Write down your top ~20 style rules (approved terms, words-to-avoid, tone).",like:"A one-page house style says “use sign in, not log in”, bans vague words like “simply”, and sets the Oxford comma rule — so reviews stop relitigating the same points."},
-    {at:65,do:"Set up an automated style linter (e.g. Vale) on the Microsoft or Google style guide.",like:"Vale runs in the writer's editor and underlines passive voice, banned words and wrong terms as they type, the way a spell-checker does."},
-    {at:85,do:"Run the style check automatically on every change in the publishing pipeline.",like:"Each doc change triggers the check and shows pass/fail before a human reviews, so reviewers spend their time on substance, not commas."},
-    {at:100,do:"Make the check a publish gate and add an AI rewrite pass.",like:"A page can't ship until checks pass, and an AI proposes fixes for flagged sentences (rewrites passive voice, simplifies reading level) for the writer to accept or reject."},
+    {at:65,do:"Set up an automated style linter (e.g. Vale) on the Microsoft or Google style guide.",like:"Vale flags passive voice, banned words and wrong terms automatically; run it on the Markdown that GitBook syncs to your repo."},
+    {at:85,do:"Run the style check on every change via GitBook Git Sync + CI.",like:"With GitBook two-way synced to GitHub/GitLab, Vale runs in CI on each pull request, so issues are caught before a page ever publishes."},
+    {at:100,do:"Make the check a publish gate and add an AI rewrite pass.",like:"A change can't merge until checks pass, and an AI proposes fixes for flagged sentences (rewrites passive voice, simplifies reading level) for the writer to accept or reject."},
   ],
   search:[
-    {at:40,do:"Improve plain keyword search first — structure, tags and filters.",like:"Pages get consistent titles, tags and a clear nav, so a keyword search reliably lands people on the right page."},
-    {at:65,do:"Pilot an “Ask AI” answer box on one high-traffic section.",like:"On “Getting started”, a kapa.ai / Inkeep / Algolia widget answers “how do I…” questions in prose with links to the source pages."},
-    {at:85,do:"Roll cited AI answers across the site and log search misses.",like:"Every page has “Ask AI”, and a weekly report lists the top questions that returned nothing — feeding straight into the content backlog."},
-    {at:100,do:"Publish a machine-readable copy (an llms.txt file + Markdown pages).",like:"When a customer asks ChatGPT or Copilot about our product, it can fetch a plain-text version of our docs and answer accurately and up to date."},
+    {at:40,do:"Tidy structure, titles and tags so plain search lands on the right page.",like:"Consistent page titles, a clear nav and good tags mean GitBook's keyword search reliably gets people to the right place."},
+    {at:65,do:"Turn on GitBook AI Search (“Ask”) on your published docs.",like:"GitBook's built-in Ask answers questions in prose with links to the source pages — available on Pro/Enterprise, no extra tooling to bolt on."},
+    {at:85,do:"Roll Ask across the whole site and watch GitBook's Ask-AI insights.",like:"Every page gets Ask, and GitBook's Ask-AI insights show the exact questions people asked and where answers fell short — straight into your backlog."},
+    {at:100,do:"Confirm GitBook is publishing llms.txt + .md so AI tools read your docs.",like:"GitBook auto-generates llms.txt, llms-full.txt and .md versions on publish — make sure it's enabled so ChatGPT/Copilot answer accurately and currently about us."},
   ],
   loc:[
     {at:40,do:"Start an approved-terms glossary.",like:"A shared sheet maps key product terms to the approved translation in each language, so “dashboard” is always rendered the same way."},
-    {at:65,do:"Add AI machine translation + human review for high-traffic pages, with a translation memory.",like:"DeepL or an LLM produces a first pass, a bilingual reviewer fixes the top pages, and approved sentences are stored so the same text is never re-translated."},
-    {at:85,do:"Move translation into the publishing pipeline (continuous).",like:"When an English page changes, only the changed strings are sent for translation and the localized page updates within hours — not in next quarter's batch."},
+    {at:65,do:"Add AI machine translation + human review for top pages, with a translation memory.",like:"Sync GitBook content to a translation tool (or use DeepL/an LLM) for a first pass, have a bilingual reviewer fix the top pages, and store approved sentences for reuse."},
+    {at:85,do:"Make translation continuous off the GitBook content sync.",like:"When an English page changes, only the changed strings flow to translation and the localized version updates within hours — not in next quarter's batch."},
     {at:100,do:"Add automatic quality scoring before human review.",like:"An automated score flags weak or sensitive translations; only those go to a human, so reviewers spend their time where it actually matters."},
   ],
   assistant:[
-    {at:40,do:"Stand up an internal, doc-grounded assistant for support.",like:"Support agents ask an internal bot grounded on the help centre and get cited answers, cutting the time they spend digging through docs."},
-    {at:65,do:"Launch a customer-facing assistant that answers only from the docs, with sources.",like:"An “Ask AI” on the help centre answers customer questions and links the exact article it drew from, so they can dig deeper."},
-    {at:85,do:"Make it say “I'm not sure” / hand off when confidence is low.",like:"When the bot isn't confident it stops guessing and offers to connect to a human — which protects trust far more than a wrong answer."},
-    {at:100,do:"Turn failed answers into doc fixes on a cadence.",like:"Each week the team reviews the bot's “couldn't answer” list and writes or updates the articles that close those gaps, so the bot keeps getting smarter."},
+    {at:40,do:"Switch on GitBook Assistant internally for the support team.",like:"Support agents chat with GitBook's AI Assistant (grounded on the help centre) and get cited answers, instead of digging through docs."},
+    {at:65,do:"Enable the customer-facing GitBook Assistant / Ask on the published site.",like:"Visitors get an interactive AI assistant that answers only from your GitBook content and links the exact pages it used."},
+    {at:85,do:"Rely on GitBook's grounded answers that cite sources and defer when unsure.",like:"Because the Assistant answers only from your docs and shows sources, it points to the article rather than bluffing when it isn't confident."},
+    {at:100,do:"Turn GitBook's Ask-AI insights into doc fixes on a cadence.",like:"Each week, review GitBook's Ask-AI insights (what people asked, where it struggled) and update the pages that close those gaps — or let the GitBook Agent propose the updates."},
   ],
   automation:[
-    {at:40,do:"Move docs into version control alongside the code (docs-as-code).",like:"Docs live in the repo; changes go through pull requests and review like code, with full history and easy rollback."},
-    {at:65,do:"Auto-generate the API reference from the OpenAPI definition.",like:"When engineers update the API spec, the reference pages regenerate automatically — nobody hand-edits endpoint tables that drift out of date."},
-    {at:85,do:"Auto-test code examples and auto-refresh screenshots.",like:"A pipeline job runs every code sample and re-captures UI screenshots, so a broken example or a stale screenshot fails the build before users ever see it."},
-    {at:100,do:"AI-draft release notes in the pipeline + auto-publish a machine-readable copy.",like:"On each release, AI drafts the “what's new” from the change history for a writer to approve, and the llms.txt copy regenerates automatically."},
+    {at:40,do:"Use GitBook Git Sync so docs live alongside code (docs-as-code).",like:"GitBook two-way syncs with GitHub/GitLab, so doc changes go through pull requests and stay versioned with full history."},
+    {at:65,do:"Add OpenAPI blocks so GitBook generates the API reference from your spec.",like:"Point GitBook at your OpenAPI file; the reference pages regenerate automatically and never drift from the actual API."},
+    {at:85,do:"Auto-test code examples and auto-refresh screenshots in CI.",like:"GitBook renders request/response examples from the spec; add CI jobs to run your other code samples and re-capture UI screenshots so nothing goes stale."},
+    {at:100,do:"AI-draft release notes in the pipeline (GitBook already auto-publishes the AI-readable copy).",like:"GitBook regenerates llms.txt on publish; add a step where AI drafts the “what's new” from your change history for a writer to approve."},
   ],
   analytics:[
-    {at:40,do:"Read support tickets and search logs monthly for gaps.",like:"Once a month someone skims the top tickets and searches and jots down five concrete article ideas."},
-    {at:65,do:"Track zero-result searches; aim for an 80%+ “found it” rate.",like:"A dashboard shows searches that returned nothing, grouped by topic, and you commission one solid article per recurring miss."},
-    {at:85,do:"Use AI to cluster tickets/searches/bot misses into ranked gaps.",like:"AI groups thousands of questions into themes like “SSO setup” with a volume count and a suggested article, exported as a ready-made backlog."},
-    {at:100,do:"Run a ranked backlog scored by expected impact.",like:"Each item carries an impact score (tickets it could deflect, search volume); the team works top-down and then measures the actual drop in tickets."},
+    {at:40,do:"Read GitBook Insights — the Search and Ask-AI tabs — every month.",like:"GitBook's Insights show top searches, page feedback and what people asked the AI; skim them monthly and jot down five concrete article ideas."},
+    {at:65,do:"Track not-found searches in GitBook Insights; aim for a high success rate.",like:"GitBook's search insights reveal exactly what users searched for and didn't find — commission one solid article per recurring miss."},
+    {at:85,do:"Use GitBook's Ask-AI insights to cluster gaps into a backlog.",like:"GitBook surfaces what visitors ask and where the Assistant struggled, grouped by theme — effectively a ready-made content-gap list."},
+    {at:100,do:"Run a ranked backlog scored by expected impact, fed from GitBook Insights.",like:"Each item carries an impact score (tickets it could deflect, search volume from Insights); work top-down, then measure the actual drop in tickets."},
   ],
   skills:[
-    {at:40,do:"Create a shared prompt library.",like:"A living page where writers post the prompts that work, each with a one-line note on when to use it."},
+    {at:40,do:"Create a shared prompt library.",like:"A living GitBook space where writers post the prompts that work, each with a one-line note on when to use it."},
     {at:65,do:"Run regular AI upskilling.",like:"A monthly 30-minute session, a “prompt of the week” in Slack, and the occasional pair-prompting on a real doc."},
     {at:85,do:"Publish written ground rules.",like:"A short policy covers what AI may and may not touch, privacy and ownership of content, and the quality bar expected before anything publishes."},
     {at:100,do:"Bake AI skill into hiring, onboarding and growth.",like:"Job descriptions mention AI-assisted writing, new hires learn the prompt library in week one, and growth plans include AI fluency — with a human always owning the final edit."},
@@ -1105,7 +1105,7 @@ let LASTPLAN=[];
 function buildActionPlan(dimMean,qMean,raters,multi){
   document.getElementById('planTitle').textContent = multi ? '🎯 Team action plan' : '🎯 Your action plan';
   const items=DIMS.map((d,i)=>({d,i,s:dimMean[i],gap:dimMean[i]==null?-1:d.bench-dimMean[i]}))
-    .filter(x=>x.s!=null && x.gap>0).sort((a,b)=>b.gap-a.gap).slice(0,3);
+    .filter(x=>x.s!=null && x.gap>0).sort((a,b)=>a.s-b.s);   // all improvable areas, lowest adoption first
   const list=document.getElementById('planList'); list.innerHTML=''; LASTPLAN=[];
   if(!items.length){
     list.innerHTML=`<li style="padding-left:16px"><span class="ph">🎉 You're at or above target on every scored area.</span><div class="pstep">Keep it up — and consider raising your own internal bar.</div></li>`;
